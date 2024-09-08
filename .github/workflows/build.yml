@@ -23,27 +23,5 @@ jobs:
     - name: Build the Docker image
       run: docker build . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/jojo:latest
 
-    steps:
-      uses: actions/checkout@v4
-    - name: Login to Scaleway Container Registry
-      uses: docker/login-action@v3
-      with:
-        username: nologin
-        password: ${{ secrets.SCALEWAY_API_KEY }}
-        registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
-
     - name: Push the Docker Image
       run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/jojo:latest
-
-    - name: Deploy to remote server  
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.DEPLOYMENT_SERVER_IP }}
-        username: ${{ secrets.DEPLOYMENT_USER }}
-        key: ${{ secrets.DEPLOYMENT_SSH_KEY }}
-        script: |
-          echo "Deploying Docker image to remote server..."
-          docker pull ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/jojo:latest
-          docker stop my-container || true
-          docker rm my-container || true
-          docker run -d --name my-container -p 8022:8022 ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/jojo:latest
